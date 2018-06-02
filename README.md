@@ -1,6 +1,8 @@
 ⚙️ GearBox ⚙️
 =======
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/theKashey/react-gearbox.svg)](https://greenkeeper.io/)
+
 Compose renderless containers like a pro. 
 Heavily inspired by [react-adopt](https://github.com/pedronauck/react-adopt)(context compose),
  [react-powerplug](https://github.com/renatorib/react-powerplug)(renderless containers)
