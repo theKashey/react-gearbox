@@ -1,6 +1,6 @@
 ⚙️ GearBox ⚙️
 =======
-[![Build Status](https://travis-ci.org/thekashey/react-gearbox.svg?branch=master)](https://travis-ci.org/thekashey/react-gearbox)
+[![Build Status](https://travis-ci.org/theKashey/react-gearbox.svg?branch=master)](https://travis-ci.org/theKashey/react-gearbox)
 [![coverage-badge](https://img.shields.io/codecov/c/github/thekashey/react-gearbox.svg?style=flat-square)](https://codecov.io/github/thekashey/react-gearbox)
 [![NPM version](https://img.shields.io/npm/v/react-gearbox.svg)](https://www.npmjs.com/package/react-gearbox)
 
