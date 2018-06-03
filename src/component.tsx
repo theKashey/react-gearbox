@@ -81,7 +81,7 @@ export function gearbox<RP, P, Shape = IGears<P, RP>>(shape: Shape | IGears<P, R
     const EntryNode = Object
       .keys(shape)
       .reduce((acc, key) => {
-        const obj: any = shape[key];
+        const obj: any = (shape as any)[key];
         const next = constructElement(obj, props, storeResult(acc, key));
 
         return () => React.cloneElement(next, {
