@@ -2,13 +2,8 @@ import * as React from 'react';
 import * as invariant from 'invariant';
 
 export declare type ChildrenFn<P> = (props: P) => JSX.Element | null
-
-export declare type MapperComponent<P, RP> = React.ComponentType<Partial<P & RP>>;
-
 export declare type MapperValue<P, RP> = React.ReactElement<any> | ChildrenFn<P>;
-
 export declare type IGears<P, RP> = Record<string, MapperValue<P, RP>>
-export declare type IGear<T> = { [P in keyof T]: any } ;
 
 export interface IGearOptions {
   copyData?: boolean;
@@ -30,13 +25,13 @@ export type ExtractData<Gears> = {
 }
 
 export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> = React.StatelessComponent<IGearbox<P, Gearings>> & {
-  train: React.SFC<{ children: ChildrenFn<Gearings> }>,
+  train: React.StatelessComponent<{ children: ChildrenFn<Gearings> }>,
   transmission: ITransmition<Gearings>
 };
 
 const realTrain = (context: React.Context<any>) => ({children}: { children: ChildrenFn<any> }) => (
   <context.Consumer>{value => children(value)}</context.Consumer>
-)
+);
 
 const realTransmition = (context: React.Context<any>): ITransmition<any> => ({clutch, render, children}) => (
   <context.Consumer>{
@@ -58,7 +53,17 @@ const realTransmition = (context: React.Context<any>): ITransmition<any> => ({cl
   }</context.Consumer>
 );
 
-export function gearbox<RP, P>(shape: IGears<P, RP>, options: IGearOptions = {}): GearBoxComponent<P, typeof shape> {
+const constructElement = (obj: any, props: any, acc: any) => {
+  if (typeof obj === "function") {
+    return React.cloneElement(obj(props), {}, acc)
+  }
+  if (obj.type) {
+    return React.cloneElement(obj, {}, acc);
+  }
+  return React.createElement(obj, {}, acc);
+}
+
+export function gearbox<RP, P, Shape = IGears<P, RP>>(shape: Shape | IGears<P, RP>, options: IGearOptions = {}): GearBoxComponent<P, Shape> {
   // generator function
   const generator = (props: any) => {
     let generation = 0;
@@ -77,10 +82,7 @@ export function gearbox<RP, P>(shape: IGears<P, RP>, options: IGearOptions = {})
       .keys(shape)
       .reduce((acc, key) => {
         const obj: any = shape[key];
-        const next =
-          typeof obj === "function"
-            ? React.cloneElement(obj(props), {}, storeResult(acc, key))
-            : React.cloneElement(obj, {}, storeResult(acc, key));
+        const next = constructElement(obj, props, storeResult(acc, key));
 
         return () => React.cloneElement(next, {
           gearsSpin: generation
@@ -126,7 +128,7 @@ export function gearbox<RP, P>(shape: IGears<P, RP>, options: IGearOptions = {})
   return RenderGear;
 }
 
-export function transmition<P, RP, NP, HP>(gearBox: GearBoxComponent<P, any, RP>, clutch: (a: RP, props?: HP) => NP): GearBoxComponent<HP, NP, NP> {
+export function transmition<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>, clutch: (a: Partial<RP>, props?: HP) => NP): GearBoxComponent<HP, NP, NP> {
   const context = React.createContext({});
 
   const RenderGear: any = ({render, children, ...rest}: { render: boolean, children: any, rest: any[] }) => (

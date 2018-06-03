@@ -1,14 +1,28 @@
 ⚙️ GearBox ⚙️
 =======
+[![Build Status](https://travis-ci.org/thekashey/react-gearbox.svg?branch=master)](https://travis-ci.org/thekashey/react-gearbox)
+[![coverage-badge](https://img.shields.io/codecov/c/github/thekashey/react-gearbox.svg?style=flat-square)](https://codecov.io/github/thekashey/react-gearbox)
+[![NPM version](https://img.shields.io/npm/v/react-gearbox.svg)](https://www.npmjs.com/package/react-gearbox)
+
 
 Compose renderless containers like a pro. 
 Heavily inspired by [react-adopt](https://github.com/pedronauck/react-adopt)(context compose),
  [react-powerplug](https://github.com/renatorib/react-powerplug)(renderless containers)
  and [redux-restate](https://github.com/theKashey/restate)(fractal state).
 
+The purpose of this library is
+ - (torque) combine "container"(plugs, context, states), to form more complex structure.
+ - (transmission) provide a way to access them down the tree.
+ - (gear train) provide a way to alter their work.
+
+That's why - gearbox
+
 # API
 
-* `gearbox(gears): Gearbox` - creates a Gearbox component. Where `gears` is a set of ReactElements of FunctionalStatelessComponents.
+* `gearbox(gears): Gearbox` - creates a Gearbox component. Where `gears` is a set of:
+  - ReactElements, or 
+  - FunctionalStatelessComponents, or 
+  - Context.Consumers.
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
 
@@ -34,9 +48,19 @@ Produces a `Gearbox` - renderless container, which will provide _torque_ from al
  
  
  const Gearbox = gearbox({
-   storedValue: <Value initial = {42} />,
+   // pass a pre-created Element, as you could do with react-adopt
+   storedValue: <Value initial={42} />,
+   
+   // pass component, to initialize Element from props (applied only on mount)
    toggle: props => <Toggle initial={props.on} />,
-   data: reactContext.Consumer,
+   
+   // pass React.Context
+   data: reactContext.Consumer as any, // !! "pure" consumers are not "type safe"
+   
+   // or pass it as React.Element
+   context: <reactContext.Consumer children={null}/>,
+   
+   // Unstated container? Anything "render-prop" capable will work.
    stated: <UnstatedContainer />,
  }); 
 ```
