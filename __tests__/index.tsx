@@ -30,6 +30,29 @@ describe('Specs', () => {
     expect(testRenderer.root.findByType('span').children).toEqual(["1", " - ", "1", " + ", "42"]);
   });
 
+  it('top level transmition', () => {
+    const context1 = React.createContext({v: 1});
+    const context2 = React.createContext({v: 2});
+
+    const Gearbox = gearbox({
+      context0: context1.Consumer as any,
+      context1: <context1.Consumer children={null}/>,
+      context2: () => <context2.Consumer children={null}/>,
+    }, {
+      transmition: ({context0, context1, context2}) => ({sum:context0.v+context1.v+context2.v})
+    });
+
+    const testRenderer = TestRenderer.create(
+      <Gearbox render>
+        {({sum}) => (
+          <span>{sum}</span>
+        )}
+      </Gearbox>
+    );
+
+    expect(testRenderer.root.findByType('span').children).toEqual(["4"]);
+  });
+
   it('train', () => {
     const context1 = React.createContext({v: 1});
     const context2 = React.createContext("42");
