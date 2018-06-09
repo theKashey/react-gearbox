@@ -1,21 +1,31 @@
 import * as React from 'react';
 import * as invariant from 'invariant';
+import * as shallowEqual from "shallowequal";
 
 export declare type ChildrenFn<P> = (props: P) => JSX.Element | null
 export declare type MapperValue<P, RP> = React.ReactElement<any> | ChildrenFn<P>;
 export declare type IGears<P, RP> = Record<string, MapperValue<P, RP>>
 
-export interface IGearOptions {
+let debugEnabled = false;
+
+export const setGearboxDebug = (flag: boolean) => {
+  debugEnabled = flag;
+}
+
+export interface IGearOptions<T, G = T> {
   copyData?: boolean;
+  transmition?: (input: T) => G
 }
 
 export type IGearbox<P, RP> = P & {
   render?: boolean;
+  name?: string;
   children: ChildrenFn<RP> | React.ReactChild
 }
 
 export type ITransmition<RP> = React.SFC<{
   render?: boolean;
+  name?: string;
   clutch: (a: RP) => any;
   children: ChildrenFn<RP> | React.ReactChild | undefined
 }>;
@@ -24,7 +34,9 @@ export type ExtractData<Gears> = {
   [P in keyof Gears]: any;
 }
 
-export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> = React.StatelessComponent<IGearbox<P, Gearings>> & {
+export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> =
+  React.StatelessComponent<IGearbox<P, Gearings>>
+  & {
   train: React.StatelessComponent<{ children: ChildrenFn<Gearings> }>,
   transmission: ITransmition<Gearings>
 };
@@ -63,20 +75,35 @@ const constructElement = (obj: any, props: any, acc: any) => {
   return React.createElement(obj, {}, acc);
 }
 
-export function gearbox<RP, P, Shape = IGears<P, RP>>(shape: Shape | IGears<P, RP>, options: IGearOptions = {}): GearBoxComponent<P, Shape> {
+const debug = (name: string, ...args: any[]) => {
+  if (debugEnabled) {
+    console.debug('Gearbox', name || 'undefined', ...args);
+  }
+}
+
+export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape: Shape | IGears<P, RP>, options: IGearOptions<Shape, ResultShape> = {}): GearBoxComponent<P, ResultShape> {
   // generator function
   const generator = (props: any) => {
     let generation = 0;
     let children: any = props.children;
 
     const result: any = {props};
+    const pureResult: any = {props};
     const storeResult = (acc: () => {}, key: string) => (data: any) => {
       generation++;
+      if (pureResult[key] !== data && !shallowEqual(pureResult[key], data)) {
+        if(pureResult[key]) {
+          debug(props.name, `key ${key} got replaced by`, data, 'old value', pureResult[key]);
+        } else {
+          debug(props.name, `key ${key} was initialized with`, data);
+        }
+      }
+      pureResult[key] = data;
       result[key] = options.copyData ? {...data} : data;
       return acc();
     };
 
-    const ExitNode = () => children({...result});
+    const ExitNode = () => children(options.transmition ? options.transmition(result) : {...result});
 
     const EntryNode = Object
       .keys(shape)

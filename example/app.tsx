@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Value} from 'react-powerplug'
-import {gearbox, transmition} from "../src";
+import {gearbox, setGearboxDebug, transmition} from "../src";
 
 
 const St = gearbox({
@@ -27,13 +27,24 @@ const Transformer: React.SFC = ({children}) => (
 
 const SubSt = transmition(St, ({v1, v2, v3}) => ({sum: v1.value + v2.value + v3.value}))
 
+const AddGear = gearbox({
+  v1: <Value initial={1}/>,
+  v2: <Value initial={1}/>,
+}, {
+  transmition: ({v1, v2}: { v1: any, v2: any }) => ({sum: v1.value + v2.value})
+})
+
 const App = () => (
   <div>
+    <AddGear render>
+      {({sum}) => <span>should be 2 = {sum}</span>}
+    </AddGear>
+
     <Value initial={99}>
       {(v0: any) => (
         <div>
           {v0.value}!!
-          <St render v={42}>
+          <St render v={42} name="St">
             {({v1, v2, v3}) => (
               <span>
                 <button onClick={() => v0.set(v0.value + 1)}>b0</button>
@@ -66,5 +77,7 @@ const App = () => (
     </Value>
   </div>
 );
+
+setGearboxDebug(true);
 
 export default App;

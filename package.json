@@ -50,6 +50,8 @@
   "keywords": [],
   "dependencies": {
     "@types/invariant": "^2.2.29",
-    "invariant": "^2.2.4"
+    "@types/shallowequal": "^0.2.2",
+    "invariant": "^2.2.4",
+    "shallowequal": "^1.0.2"
   }
 }

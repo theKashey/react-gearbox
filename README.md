@@ -19,10 +19,14 @@ That's why - gearbox
 
 # API
 
-* `gearbox(gears): Gearbox` - creates a Gearbox component. Where `gears` is a set of:
-  - ReactElements, or 
-  - FunctionalStatelessComponents, or 
-  - Context.Consumers.
+* `gearbox(gears, options?): Gearbox` - creates a Gearbox component. Where
+ * `gears` is a shape of different _render-prop_ components, for example:
+      - ReactElements, or 
+      - FunctionalStatelessComponents, or 
+      - Context.Consumers.
+  
+  * `options` is an optional field.
+      - options.transmition(input) => output - build in transmition, to be applied on gears.
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
 
