@@ -28,10 +28,18 @@ const Transformer: React.SFC = ({children}) => (
 const SubSt = transmition(St, ({v1, v2, v3}) => ({sum: v1.value + v2.value + v3.value}))
 
 const AddGear = gearbox({
+  v0: <Value initial={1}/>,
   v1: <Value initial={1}/>,
   v2: <Value initial={1}/>,
 }, {
   transmition: ({v1, v2}: { v1: any, v2: any }) => ({sum: v1.value + v2.value})
+})
+
+const AddGearS = gearbox({
+  v1: <Value initial={1}/>,
+  v2: <Value initial={1}/>,
+}, {
+  transmition: ({v1, v2}: { v1: any, v2: any }, {add}:{add:number}) => ({sum: v1.value + v2.value+add})
 })
 
 const App = () => (
@@ -39,6 +47,10 @@ const App = () => (
     <AddGear render>
       {({sum}) => <span>should be 2 = {sum}</span>}
     </AddGear>
+
+    <AddGearS render add={1}>
+      {({sum}) => <span>should be 3 = {sum}</span>}
+    </AddGearS>
 
     <Value initial={99}>
       {(v0: any) => (

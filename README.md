@@ -26,7 +26,7 @@ That's why - gearbox
       - Context.Consumers.
   
   * `options` is an optional field.
-      - options.transmition(input) => output - build in transmition, to be applied on gears.
+      - options.transmition(input, props) => output - build in transmition, to be applied on gears.
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
 

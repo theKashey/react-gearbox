@@ -12,9 +12,9 @@ export const setGearboxDebug = (flag: boolean) => {
   debugEnabled = flag;
 }
 
-export interface IGearOptions<T, G = T> {
+export interface IGearOptions<T, P, G = T> {
   copyData?: boolean;
-  transmition?: (input: T) => G
+  transmition?: (input: T, props: P) => G
 }
 
 export type IGearbox<P, RP> = P & {
@@ -81,7 +81,7 @@ const debug = (name: string, ...args: any[]) => {
   }
 }
 
-export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape: Shape | IGears<P, RP>, options: IGearOptions<Shape, ResultShape> = {}): GearBoxComponent<P, ResultShape> {
+export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape: Shape | IGears<P, RP>, options: IGearOptions<Shape, P, ResultShape> = {}): GearBoxComponent<P, ResultShape> {
   // generator function
   const generator = (props: any) => {
     let generation = 0;
@@ -103,7 +103,7 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape
       return acc();
     };
 
-    const ExitNode = () => children(options.transmition ? options.transmition(result) : {...result});
+    const ExitNode = () => children(options.transmition ? options.transmition(result, props) : {...result});
 
     const EntryNode = Object
       .keys(shape)
