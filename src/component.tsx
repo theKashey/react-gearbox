@@ -19,6 +19,7 @@ export interface IGearOptions<T, P, G = T> {
 
 export type IGearbox<P, RP> = P & {
   render?: boolean;
+  local?: boolean;
   name?: string;
   children: ChildrenFn<RP> | React.ReactChild
 }
@@ -42,13 +43,17 @@ export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> =
 };
 
 const realTrain = (context: React.Context<any>) => ({children}: { children: ChildrenFn<any> }) => (
-  <context.Consumer>{value => children(value)}</context.Consumer>
+  <context.Consumer>{value => {
+    invariant(value, "Gearbox.train: parent gearbox was not found");
+    return children(value)
+  }}</context.Consumer>
 );
 
 const realTransmition = (context: React.Context<any>): ITransmition<any> => ({clutch, render, children}) => (
   <context.Consumer>{
     oldValues => {
       const newValues: any = clutch(oldValues as any);
+      invariant(oldValues, "Gearbox.transmition: parent gearbox was not found");
       render && invariant(typeof children === "function", "Gearbox.transmition: children should be a function in case of `render` prop");
       !render && invariant(typeof children !== "function", "Gearbox.transmition: children should be a ReactNode, when `render` prop is not set");
       const renderChild: any = children;
@@ -128,15 +133,14 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape
     generator = generator(this.props);
 
     onRender = (data: any) => {
-      const {render, children} = this.props;
+      const {render, children, local} = this.props;
       render && invariant(typeof children === "function", "Gearbox: children should be a function in case of `render` prop");
       !render && invariant(typeof children !== "function", "Gearbox: children should be a ReactNode, when `render` prop is not set");
-      const renderChild: any = children
-      return (
-        <context.Provider value={data}>
-          {render ? renderChild(data) : renderChild}
-        </context.Provider>
-      )
+      const renderChild: any = children;
+      const rendered = render ? renderChild(data) : renderChild;
+      return local
+        ? rendered
+        : <context.Provider value={data}>{rendered}</context.Provider>
     };
 
     render() {
