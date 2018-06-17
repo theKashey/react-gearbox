@@ -14,6 +14,11 @@ export const setGearboxDebug = (flag: boolean) => {
 
 export interface IGearOptions<T, P, G = T> {
   copyData?: boolean;
+  defaultProps?: {
+    render?: boolean,
+    local?: boolean,
+    name?: string
+  },
   transmition?: (input: T, props: P) => G
 }
 
@@ -136,7 +141,8 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>
     static transmission: ITransmition<ExtractData<ResultShape>> = realTransmition(context);
 
     onRender = (data: any) => {
-      const {render, children, local} = this.props;
+      const {defaultProps = {}} = options;
+      const {render = defaultProps.render, children, local = defaultProps.local} = this.props;
       render && invariant(typeof children === "function", "Gearbox: children should be a function in case of `render` prop");
       !render && invariant(typeof children !== "function", "Gearbox: children should be a ReactNode, when `render` prop is not set");
       const renderChild: any = children;

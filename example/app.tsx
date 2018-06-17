@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Value} from 'react-powerplug'
+import {Value, Toggle} from 'react-powerplug'
 import {gearbox, setGearboxDebug, transmition} from "../src";
 
 
@@ -39,14 +39,31 @@ const AddGearS = gearbox({
   v1: <Value initial={1}/>,
   v2: <Value initial={1}/>,
 }, {
-  transmition: ({v1, v2}: { v1: any, v2: any }, {add}:{add:number}) => ({sum: v1.value + v2.value+add})
-})
+  transmition: ({v1, v2}: { v1: any, v2: any }, {add}: { add: number }) => ({sum: v1.value + v2.value + add})
+});
+
+const Switch = gearbox({
+  toggle: ({initial}:{initial:boolean}) => <Toggle initial={initial} />,
+}, {
+  defaultProps: {
+    render: true
+  },
+  transmition: ({toggle}: { toggle: { on: boolean, toggle: () => void } }) => ({
+    enabled: toggle.on,
+    switchIt: toggle.toggle
+  })
+});
 
 const App = () => (
   <div>
     <AddGear render>
       {({sum}) => <span>should be 2 = {sum}</span>}
     </AddGear>
+
+    <Switch initial={true}>
+      {({enabled}) => <div> toggled(Y) {enabled ? "Y" : "N"} </div>}
+    </Switch>
+
 
     <AddGearS render add={1}>
       {({sum}) => <span>should be 3 = {sum}</span>}

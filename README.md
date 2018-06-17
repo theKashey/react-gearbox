@@ -20,15 +20,19 @@ That's why - gearbox
 # API
 
 * `gearbox(gears, options?): Gearbox` - creates a Gearbox component. Where
- * `gears` is a shape of different _render-prop_ components, for example:
+ * `gears` is a shape of different _render-prop-ish_ components, for example:
       - ReactElements, or 
       - FunctionalStatelessComponents, or 
       - Context.Consumers.
   
   * `options` is an optional field.
       - options.transmition(input, props) => output - build in transmition, to be applied on gears.
+      - options.defaultProps - set default props for a future component
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
+
+!By default Gearbox __expects ReactNode as a children__, and data to be accessed via `train`, you may specify `render` props, 
+to change this behavior to function-as-children. See second example. 
 
 * `transmission(gearboxIn, clutch): Gearbox` - created a devired Gearbox, with "clutch" function applied to all stored data. 
 
@@ -47,6 +51,9 @@ Produces a `Gearbox` - renderless container, which will provide _torque_ from al
  Gearbox could merge output from different component using the keys as names.
  But sometimes you need a bit another structure, for example - just rename fields.
 ```js
+import {gearbox} from 'react-gearbox';
+import {Toggle} from 'react-powerplug';
+
  const Gearbox = gearbox({   
    leftMenuController: <Toggle initial={} />,
    topMenuController: <Toggle initial={} />,
@@ -61,8 +68,32 @@ Produces a `Gearbox` - renderless container, which will provide _torque_ from al
   });
 ```  
 
+In the same way - you can create a new Components
+
+```js
+ const Switch = gearbox({   
+   toggle: props => <Toggle {...props} />,
+  }, {
+   transmition: ({toggle}) => ({
+     enabled: toggle.on,
+     switch: toggle.toggle     
+   }),
+   defaultProps: {
+     render: true, // render props as default
+     local: false  // no context support
+   }
+  });
+
+// new component adopted!
+<Switch initial={true}>
+ {({enabled, switch}) => ... }
+</Switch>
+``` 
+
 The same technique could be used to achieve the same results as recompose's `withHandlers`
 > While gearbox itself is `withState`.  
+
+
 
  
 # Examples
