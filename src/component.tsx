@@ -36,7 +36,7 @@ export type ExtractData<Gears> = {
 }
 
 export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> =
-  React.StatelessComponent<IGearbox<P, Gearings>>
+  React.ComponentClass<IGearbox<P, Gearings>>
   & {
   train: React.StatelessComponent<{ children: ChildrenFn<Gearings> }>,
   transmission: ITransmition<Gearings>
@@ -78,15 +78,16 @@ const constructElement = (obj: any, props: any, acc: any) => {
     return React.cloneElement(obj, {}, acc);
   }
   return React.createElement(obj, {}, acc);
-}
+};
 
 const debug = (name: string, ...args: any[]) => {
   if (debugEnabled) {
     console.debug('Gearbox', name || 'undefined', ...args);
   }
-}
+};
 
-export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape: Shape | IGears<P, RP>, options: IGearOptions<Shape, P, ResultShape> = {}): GearBoxComponent<P, ResultShape> {
+export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>
+(shape: Shape | IGears<P, RP>, options: IGearOptions<Shape, P, ResultShape> = {}): GearBoxComponent<P, ResultShape> {
   // generator function
   const generator = (props: any) => {
     let generation = 0;
@@ -97,7 +98,7 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape
     const storeResult = (acc: () => {}, key: string) => (data: any) => {
       generation++;
       if (pureResult[key] !== data && !shallowEqual(pureResult[key], data)) {
-        if(pureResult[key]) {
+        if (pureResult[key]) {
           debug(props.name, `key ${key} got replaced by`, data, 'old value', pureResult[key]);
         } else {
           debug(props.name, `key ${key} was initialized with`, data);
@@ -127,10 +128,12 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape
     };
   };
 
-  const context = React.createContext({})
+  const context = React.createContext({});
 
-  class Gearbox extends React.Component<IGearbox<P, RP>> {
-    generator = generator(this.props);
+  class Gearbox extends React.Component<IGearbox<P, ExtractData<ResultShape>>> {
+    private generator = generator(this.props);
+    static train = realTrain(context);
+    static transmission: ITransmition<ExtractData<ResultShape>> = realTransmition(context);
 
     onRender = (data: any) => {
       const {render, children, local} = this.props;
@@ -148,15 +151,7 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>(shape
     }
   }
 
-  const RenderGear: any = (props: any) => <Gearbox {...props} />;
-
-  const train = realTrain(context);
-  const transmission: ITransmition<RP> = realTransmition(context);
-
-  RenderGear.train = train;
-  RenderGear.transmission = transmission;
-
-  return RenderGear;
+  return Gearbox;
 }
 
 export function transmition<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>, clutch: (a: Partial<RP>, props?: HP) => NP): GearBoxComponent<HP, NP, NP> {

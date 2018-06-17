@@ -43,6 +43,28 @@ Produces a `Gearbox` - renderless container, which will provide _torque_ from al
  - `trains` - to access distant gearbox.
  - `transmission` - to adapt data structure for the local needs.
  
+## Adaptation
+ Gearbox could merge output from different component using the keys as names.
+ But sometimes you need a bit another structure, for example - just rename fields.
+```js
+ const Gearbox = gearbox({   
+   leftMenuController: <Toggle initial={} />,
+   topMenuController: <Toggle initial={} />,
+  }, {
+   transmition: ({leftMenuController, topMenuController}) => ({
+     isLeftMenuOpen: leftMenuController.value,
+     isTopMenuOpen: topMenuController.value,
+     
+     toggleLeftMenuOpen: leftMenuController.toggle,
+     toggleTopMenuOpen: topMenuController.toggle     
+   })
+  });
+```  
+
+The same technique could be used to achieve the same results as recompose's `withHandlers`
+> While gearbox itself is `withState`.  
+
+ 
 # Examples
 
 1. Create a gearbox  
@@ -70,6 +92,8 @@ Produces a `Gearbox` - renderless container, which will provide _torque_ from al
 ```
 
 2. Use Gearbox with or without renderprops 
+
+> `render` stands for renderProps, `on` is required by `toggle`, so required by Gearbox
  ```js
  const App = () => (
      <Gearbox on render>
@@ -117,7 +141,7 @@ const Transmission = () => (
  )
 ```
 
-4. Use transmission to achive type safe transmission.
+4. Use transmission to achieve type safe transmission.
 ```js
 const TransmittedGear = transmission(Gearbox, ({toggle, data}) => ({on:toggle.on, toggle: data.toggle}));
 ```
