@@ -1,6 +1,6 @@
 {
   "name": "react-gearbox",
-  "version": "1.1.4",
+  "version": "2.0.0",
   "description": "Renderless data provider.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
