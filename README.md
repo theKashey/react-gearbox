@@ -26,7 +26,7 @@ That's why - gearbox
       - Context.Consumers.
   
   * `options` is an optional field.
-      - options.transmition(input, props) => output - build in transmition, to be applied on gears.
+      - options.transmission(input, props) => output - build in transmission, to be applied on gears.
       - options.defaultProps - set default props for a future component
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
@@ -38,7 +38,7 @@ to change this behavior to function-as-children. See second example.
 
 `Gearbox` is a compound component, and includes 2 sub components
 * Gearbox.train - _React Context_ based long-range torque provider, which will provide access to the parent Gearbox from the nested components.
-* Gearbox.transmission - establish a local (declarative) transmition. Might not be type safe.
+* Gearbox.transmission - establish a local (declarative) transmission. Might not be type safe.
 
 `Gearbox` has only one prop - `render`, if not set - children is a ReactNode. If set - renderProp(function as a children)
  
@@ -58,7 +58,7 @@ import {Toggle} from 'react-powerplug';
    leftMenuController: <Toggle initial={} />,
    topMenuController: <Toggle initial={} />,
   }, {
-   transmition: ({leftMenuController, topMenuController}) => ({
+   transmission: ({leftMenuController, topMenuController}) => ({
      isLeftMenuOpen: leftMenuController.value,
      isTopMenuOpen: topMenuController.value,
      
@@ -74,7 +74,7 @@ In the same way - you can create a new Components
  const Switch = gearbox({   
    toggle: props => <Toggle {...props} />,
   }, {
-   transmition: ({toggle}) => ({
+   transmission: ({toggle}) => ({
      enabled: toggle.on,
      switch: toggle.toggle     
    }),

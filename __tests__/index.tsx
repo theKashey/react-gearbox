@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as TestRenderer from 'react-test-renderer';
-import {gearbox, transmition} from "../src";
+import {gearbox, transmission} from "../src";
 import {Value} from "react-powerplug";
 
 describe('Specs', () => {
@@ -30,17 +30,35 @@ describe('Specs', () => {
     expect(testRenderer.root.findByType('span').children).toEqual(["1", " - ", "1", " + ", "42"]);
   });
 
-  it('top level transmition', () => {
+  it('top level transmission', () => {
     const context1 = React.createContext({v: 1});
     const context2 = React.createContext({v: 2});
+
+    const Gearbox0 = gearbox({
+      context0: context1.Consumer as any,
+      context1: <context1.Consumer children={null}/>,
+      context2: () => <context2.Consumer children={null}/>,
+    });
 
     const Gearbox = gearbox({
       context0: context1.Consumer as any,
       context1: <context1.Consumer children={null}/>,
       context2: () => <context2.Consumer children={null}/>,
     }, {
-      transmition: ({context0, context1, context2}) => ({sum:context0.v+context1.v+context2.v})
+      transmission: ({context0, context1, context2}) => ({sum: context0.v + context1.v + context2.v})
     });
+
+    const testC = () => (
+      <context2.Consumer>
+        {({v0}) => <div>{v0}</div>}
+      </context2.Consumer>
+    )
+
+    const testG = () => (
+      <Gearbox0 render>
+        {({context1}) => <div>{context1.v}</div>}
+      </Gearbox0>
+    )
 
     const testRenderer = TestRenderer.create(
       <Gearbox render>
@@ -80,7 +98,7 @@ describe('Specs', () => {
     expect(testRenderer.root.findByType('span').children).toEqual(["1", " + ", "42"]);
   });
 
-  it('transmition', () => {
+  it('transmission', () => {
     const context1 = React.createContext({v: 1});
     const context2 = React.createContext("42");
 
@@ -89,7 +107,7 @@ describe('Specs', () => {
       context2: () => <context2.Consumer children={null}/>,
     });
 
-    const Ungear = transmition(Gearbox, ({context1, context2}) => ({sum: (+context1) + (+context2.v)}));
+    const Ungear = transmission(Gearbox, ({context1, context2}) => ({sum: (+context1) + (+context2.v)}));
 
     const InnerComponent = () => (
       <Ungear render>
@@ -125,10 +143,10 @@ describe('Specs', () => {
     let spyV2;
     let spyV3;
 
-    const store = (v1,v2,v3) => {
-      spyV1=v1;
-      spyV2=v2;
-      spyV3=v3;
+    const store = (v1, v2, v3) => {
+      spyV1 = v1;
+      spyV2 = v2;
+      spyV3 = v3;
       return "spy";
     };
 
@@ -158,5 +176,50 @@ describe('Specs', () => {
 
     expect(testRenderer.root.findByType('span').children).toEqual(["*", " + ", "_", " + ", "^"]);
 
+  });
+
+  it('added value change', () => {
+    const Gearbox = gearbox({
+      v1: <Value initial={0}/>,
+    }, {
+      transmission: (result, {added}: { added: number }) => ({
+        ...result,
+        added: added + result.v1.value
+      })
+    });
+
+    let spyV1;
+    let spyV2;
+
+    const store = (v1, v2) => {
+      spyV1 = v1;
+      spyV2 = v2;
+      return "spy";
+    };
+
+    const testRenderer = TestRenderer.create(
+      <Value initial={42}>
+        {v0 => (
+        <Gearbox render added={v0.value}>
+          {({v1, added}) =>
+            <div>
+              {store(v1, v0)}
+              <span>{v1.value}{v0.value}{added}</span>
+            </div>
+          }
+        </Gearbox>
+        )}
+      </Value>
+    );
+
+    expect(testRenderer.root.findByType('span').children).toEqual(["0","42","42"]);
+
+    spyV2.set(20);
+
+    expect(testRenderer.root.findByType('span').children).toEqual(["0","20","20"]);
+
+    spyV1.set(10);
+
+    expect(testRenderer.root.findByType('span').children).toEqual(["10","20","30"]);
   })
 });

@@ -2,8 +2,8 @@ import * as React from 'react';
 import * as invariant from 'invariant';
 import * as shallowEqual from "shallowequal";
 
-export declare type ChildrenFn<P> = (props: P) => JSX.Element | null
-export declare type MapperValue<P, RP> = React.ReactElement<any> | ChildrenFn<P>;
+export declare type ChildrenFn<P> = (props: P) => (JSX.Element | null)
+export declare type MapperValue<P, RP> = React.ReactElement<{ children: ChildrenFn<P> }> | ChildrenFn<P>;
 export declare type IGears<P, RP> = Record<string, MapperValue<P, RP>>
 
 let debugEnabled = false;
@@ -19,7 +19,7 @@ export interface IGearOptions<T, P, G = T> {
     local?: boolean,
     name?: string
   },
-  transmition?: (input: T, props: P) => G
+  transmission?: (input: ExtractData<T>, props: P) => G
 }
 
 export type IGearbox<P, RP> = P & {
@@ -29,22 +29,28 @@ export type IGearbox<P, RP> = P & {
   children: ChildrenFn<RP> | React.ReactChild
 }
 
-export type ITransmition<RP> = React.SFC<{
+export type ITransmission<RP> = React.SFC<{
   render?: boolean;
   name?: string;
   clutch: (a: RP) => any;
   children: ChildrenFn<RP> | React.ReactChild | undefined
 }>;
 
+// type RenderElementFactory<T> = (props:any) => React.ReactElement<{ children: ChildrenFn<T> }>;
+// type RenderElement<T> = React.ReactElement<{ children: ChildrenFn<T>}>;
+
 export type ExtractData<Gears> = {
-  [P in keyof Gears]: any;
+  [P in keyof Gears]:
+    // Gears[P] extends RenderElement<infer U> ? U :
+    //  Gears[P] extends RenderElementFactory<infer U> ? U :
+        any
 }
 
 export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> =
   React.ComponentClass<IGearbox<P, Gearings>>
   & {
   train: React.StatelessComponent<{ children: ChildrenFn<Gearings> }>,
-  transmission: ITransmition<Gearings>
+  transmission: ITransmission<Gearings>
 };
 
 const realTrain = (context: React.Context<any>) => ({children}: { children: ChildrenFn<any> }) => (
@@ -54,13 +60,13 @@ const realTrain = (context: React.Context<any>) => ({children}: { children: Chil
   }}</context.Consumer>
 );
 
-const realTransmition = (context: React.Context<any>): ITransmition<any> => ({clutch, render, children}) => (
+const realTransmission = (context: React.Context<any>): ITransmission<any> => ({clutch, render, children}) => (
   <context.Consumer>{
     oldValues => {
       const newValues: any = clutch(oldValues as any);
-      invariant(oldValues, "Gearbox.transmition: parent gearbox was not found");
-      render && invariant(typeof children === "function", "Gearbox.transmition: children should be a function in case of `render` prop");
-      !render && invariant(typeof children !== "function", "Gearbox.transmition: children should be a ReactNode, when `render` prop is not set");
+      invariant(oldValues, "Gearbox.transmission: parent gearbox was not found");
+      render && invariant(typeof children === "function", "Gearbox.transmission: children should be a function in case of `render` prop");
+      !render && invariant(typeof children !== "function", "Gearbox.transmission: children should be a ReactNode, when `render` prop is not set");
       const renderChild: any = children;
 
       return (
@@ -75,9 +81,9 @@ const realTransmition = (context: React.Context<any>): ITransmition<any> => ({cl
   }</context.Consumer>
 );
 
-const constructElement = (obj: any, props: any, acc: any) => {
+const constructElement = (obj: any, props: any, prevProps: any, acc: any) => {
   if (typeof obj === "function") {
-    return React.cloneElement(obj(props), {}, acc)
+    return React.cloneElement(obj(props, prevProps), {}, acc)
   }
   if (obj.type) {
     return React.cloneElement(obj, {}, acc);
@@ -91,16 +97,20 @@ const debug = (name: string, ...args: any[]) => {
   }
 };
 
-export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>
-(shape: Shape | IGears<P, RP>, options: IGearOptions<Shape, P, ResultShape> = {}): GearBoxComponent<P, ResultShape> {
+export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape, GearOptions = IGearOptions<Shape, P, ResultShape>>
+(shape: Shape | IGears<P, RP>, options?: GearOptions | IGearOptions<Shape, P, ResultShape>): GearBoxComponent<P, ResultShape> {
   // generator function
-  const generator = (props: any) => {
-    let generation = 0;
-    let children: any = props.children;
+  const gearOptions = (options as IGearOptions<Shape, P, ResultShape>) || {};
 
-    const result: any = {props};
-    const pureResult: any = {props};
-    const storeResult = (acc: () => {}, key: string) => (data: any) => {
+  const generator = () => {
+    let generation = 0;
+
+    let children: any;
+    let props: any;
+
+    const result: any = {};
+    const pureResult: any = {};
+    const storeResult = (acc: (props: any) => {}, key: string) => (data: any) => {
       generation++;
       if (pureResult[key] !== data && !shallowEqual(pureResult[key], data)) {
         if (pureResult[key]) {
@@ -110,24 +120,26 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>
         }
       }
       pureResult[key] = data;
-      result[key] = options.copyData ? {...data} : data;
-      return acc();
+      result[key] = gearOptions.copyData ? {...data} : data;
+      return acc({...result});
     };
 
-    const ExitNode = () => children(options.transmition ? options.transmition(result, props) : {...result});
+    const ExitNode = (prevProps: any) => (
+      children(gearOptions.transmission ? gearOptions.transmission(prevProps, props) : {...result})
+    );
 
     const EntryNode = Object
       .keys(shape)
       .reduce((acc, key) => {
         const obj: any = (shape as any)[key];
-        const next = constructElement(obj, props, storeResult(acc, key));
 
-        return () => React.cloneElement(next, {
+        return (prevProps:any) => React.cloneElement(constructElement(obj, props, prevProps, storeResult(acc, key)), {
           gearsSpin: generation
         });
       }, ExitNode);
 
-    return (childrenOverride: any) => {
+    return (propOverride: any, childrenOverride: any) => {
+      props = propOverride;
       children = childrenOverride;
       return React.createElement(EntryNode);
     };
@@ -136,12 +148,12 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>
   const context = React.createContext({});
 
   class Gearbox extends React.Component<IGearbox<P, ExtractData<ResultShape>>> {
-    private generator = generator(this.props);
+    private generator = generator();
     static train = realTrain(context);
-    static transmission: ITransmition<ExtractData<ResultShape>> = realTransmition(context);
+    static transmission: ITransmission<ExtractData<ResultShape>> = realTransmission(context);
 
     onRender = (data: any) => {
-      const {defaultProps = {}} = options;
+      const {defaultProps = {}} = gearOptions;
       const {render = defaultProps.render, children, local = defaultProps.local} = this.props;
       render && invariant(typeof children === "function", "Gearbox: children should be a function in case of `render` prop");
       !render && invariant(typeof children !== "function", "Gearbox: children should be a ReactNode, when `render` prop is not set");
@@ -153,14 +165,14 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape>
     };
 
     render() {
-      return this.generator(this.onRender);
+      return this.generator(this.props, this.onRender);
     }
   }
 
   return Gearbox;
 }
 
-export function transmition<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>, clutch: (a: Partial<RP>, props?: HP) => NP): GearBoxComponent<HP, NP, NP> {
+export function transmission<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>, clutch: (a: Partial<RP>, props?: HP) => NP): GearBoxComponent<HP, NP, NP> {
   const context = React.createContext({});
 
   const RenderGear: any = ({render, children, ...rest}: { render: boolean, children: any, rest: any[] }) => (
@@ -168,8 +180,8 @@ export function transmition<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>,
       {
         oldValues => {
           const newValues: any = clutch(oldValues as any, rest as any);
-          render && invariant(typeof children === "function", "Gearbox.Transmition: children should be a function in case of `render` prop");
-          !render && invariant(typeof children !== "function", "Gearbox.Transmition: children should be a ReactNode, when `render` prop is not set");
+          render && invariant(typeof children === "function", "Gearbox.Transmission: children should be a function in case of `render` prop");
+          !render && invariant(typeof children !== "function", "Gearbox.Transmission: children should be a ReactNode, when `render` prop is not set");
           const renderChild: any = children;
 
           return (
@@ -185,7 +197,7 @@ export function transmition<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>,
     </gearBox.train>
   );
 
-  const transmission: ITransmition<RP> = realTransmition(context);
+  const transmission: ITransmission<RP> = realTransmission(context);
   const train = realTrain(context);
 
   RenderGear.train = train;
