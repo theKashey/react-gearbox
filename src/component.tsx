@@ -1,16 +1,39 @@
 import * as React from 'react';
 import * as invariant from 'invariant';
 import * as shallowEqual from "shallowequal";
+import {reactRename} from "react-rename";
+import {Diff} from "utility-types";
+
+type ExtractProps<T> = T extends React.ComponentType<infer U> ? U : any;
+export type RenderableElement<T> = {
+  type: T,
+  props: Diff<ExtractProps<T>, { children: any }>
+  typed: true
+}
 
 export declare type ChildrenFn<P> = (props: P) => (JSX.Element | null)
-export declare type MapperValue<P, RP> = React.ReactElement<{ children: ChildrenFn<P> }> | ChildrenFn<P>;
+export declare type MapperValue<P, RP> =
+  | React.ReactElement<{ children: ChildrenFn<P> }>
+  | ChildrenFn<P>
+  | RenderableElement<any>;
+
 export declare type IGears<P, RP> = Record<string, MapperValue<P, RP>>
+
+const nop = (): null => null;
+
+export function gear<T>
+(type: T, props: Diff<ExtractProps<T>, { children: any }>): RenderableElement<T> {
+  const Type = type as any;
+  return (<Type {...props} children={nop}/>) as any;
+}
 
 let debugEnabled = false;
 
+declare const process: any;
+
 export const setGearboxDebug = (flag: boolean) => {
   debugEnabled = flag;
-}
+};
 
 export interface IGearOptions<T, P, G = T> {
   copyData?: boolean;
@@ -23,11 +46,15 @@ export interface IGearOptions<T, P, G = T> {
 }
 
 export type IGearbox<P, RP> = P & {
-  render?: boolean;
   local?: boolean;
   name?: string;
-  children: ChildrenFn<RP> | React.ReactChild
-}
+} & ({
+  render: true;
+  children: ChildrenFn<RP>;
+} | {
+  render?: false;
+  children: React.ReactChild;
+})
 
 export type ITransmission<RP> = React.SFC<{
   render?: boolean;
@@ -41,9 +68,11 @@ export type ITransmission<RP> = React.SFC<{
 
 export type ExtractData<Gears> = {
   [P in keyof Gears]:
-    // Gears[P] extends RenderElement<infer U> ? U :
-    //  Gears[P] extends RenderElementFactory<infer U> ? U :
-        any
+  // Gears[P] extends RenderableElement<infer U>
+  // ? (
+  // U extends React.SFC<{children: infer T}> ? ({yy:T}) : {xx:number}
+  // )
+  any
 }
 
 export type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> =
@@ -81,14 +110,24 @@ const realTransmission = (context: React.Context<any>): ITransmission<any> => ({
   }</context.Consumer>
 );
 
-const constructElement = (obj: any, props: any, prevProps: any, acc: any) => {
+const getName = (type: any) => type.displayName || type.name || 'Component';
+
+const gearName = (type: any, key: string) =>
+  process.env.NODE_ENV === 'production'
+    ? type
+    : reactRename(type, `${key}/⚙️/︎${getName(type)}/📦`);
+
+const constructElement = (key: string, obj: any, props: any, prevProps: any, acc: any) => {
+  let next = null;
   if (typeof obj === "function") {
-    return React.cloneElement(obj(props, prevProps), {}, acc)
+    next = obj(props, prevProps);
   }
   if (obj.type) {
-    return React.cloneElement(obj, {}, acc);
+    next = obj
   }
-  return React.createElement(obj, {}, acc);
+  return next
+    ? React.cloneElement({...next, type: gearName(next.type, key)}, {}, acc)
+    : React.createElement(gearName(obj, key), {}, acc);
 };
 
 const debug = (name: string, ...args: any[]) => {
@@ -128,14 +167,19 @@ export function gearbox<RP, P, Shape = IGears<P, RP>, ResultShape = Shape, GearO
       children(gearOptions.transmission ? gearOptions.transmission(prevProps, props) : {...result})
     );
 
+    const gearings: { [key: string]: React.ReactElement<any> } = {};
+
     const EntryNode = Object
       .keys(shape)
       .reduce((acc, key) => {
         const obj: any = (shape as any)[key];
 
-        return (prevProps:any) => React.cloneElement(constructElement(obj, props, prevProps, storeResult(acc, key)), {
-          gearsSpin: generation
-        });
+        return (prevProps: any) => {
+          gearings[key] = gearings[key] || constructElement(key, obj, props, prevProps, storeResult(acc, key));
+          return React.cloneElement(gearings[key], {
+            gearsSpin: generation
+          })
+        };
       }, ExitNode);
 
     return (propOverride: any, childrenOverride: any) => {

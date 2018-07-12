@@ -1,0 +1,29 @@
+// @flow
+import * as React from "react";
+import {gearbox} from '../src';
+import {Value} from 'react-powerplug';
+
+
+const context1 = React.createContext({v: 1});
+const context2 = React.createContext("42");
+
+const Null = (data) => <div>{data}</div>;
+
+const Gearbox = gearbox({
+  //context0: /* (:any) */ context1.Consumer,
+  context1: <context1.Consumer children={Null}/>,
+ // context2: () => <context2.Consumer children={Null}/>,
+  value: <Value initial="42" children={Null} />
+});
+
+const test = () => (
+  <Gearbox render>
+    {({context1, context2, value, wrong}) => (
+      <div>
+        {context1.v}
+        {context2.v}
+        {value.value}
+      </div>
+    )}
+  </Gearbox>
+)

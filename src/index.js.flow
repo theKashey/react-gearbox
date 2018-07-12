@@ -1,0 +1,59 @@
+// @flow
+
+// ***** THIS DOES NOT WORK ******
+
+/*
+import * as React from 'react';
+
+type ChildrenFn<P> = (props: P) => React.Node;
+type MapperValue<P, RP> = React.Element<{
+  children: ChildrenFn<P>
+}>;// | ChildrenFn<P>;
+
+type IGears<P, RP> = {
+  [key: string]: MapperValue<P, RP>;
+}
+
+type ReactChild = React.Node;
+
+interface IGearOptions<T, P, G: T> {
+  copyData?: boolean;
+  defaultProps?: {
+    render?: boolean;
+    local?: boolean;
+    name?: string;
+  };
+  transmission?: (input: ExtractData<T>, props: P) => G;
+}
+
+type IGearbox<P, RP> = P & {
+  local?: boolean;
+  name?: string;
+} & ({
+  render: true;
+  children: ChildrenFn<RP>;
+} | {
+  children: ReactChild;
+});
+
+type ITransmission<RP> = React.StatelessFunctionalComponent<{
+  render?: boolean;
+  name?: string;
+  clutch: (a: RP) => any;
+  children?: ChildrenFn<RP> | ReactChild;
+}>;
+
+type ExtractData<Gears> = $ObjMap<Gears, any>;
+
+type GearBoxComponent<P, Gears, Gearings = ExtractData<Gears>> = React.Component<IGearbox<P, Gearings>> & {
+  train: React.StatelessFunctionalComponent<{
+    children: ChildrenFn<Gearings>;
+  }>;
+  transmission: ITransmission<Gearings>;
+};
+
+declare export function setGearboxDebug(flag: boolean): void;
+declare export function gearbox<RP, P, Shape: IGears<P, RP>, ResultShape: Shape, GearOptions: IGearOptions<Shape, P, ResultShape>>(shape: Shape, options?: GearOptions): GearBoxComponent<P, ResultShape>;
+declare export function transmission<RP, NP, HP>(gearBox: GearBoxComponent<any, any, RP>, clutch: (a: RP, props?: HP) => NP): GearBoxComponent<HP, NP, NP>;
+
+*/

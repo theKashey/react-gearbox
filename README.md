@@ -27,7 +27,7 @@ That's why - gearbox
   
   * `options` is an optional field.
       - options.transmission(input, props) => output - build in transmission, to be applied on gears.
-      - options.defaultProps - set default props for a future component
+      - options.defaultProps - set default props for a future component (note: defaultProps are not reflected on types, PR welcomed)
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
 
@@ -41,6 +41,8 @@ to change this behavior to function-as-children. See second example.
 * Gearbox.transmission - establish a local (declarative) transmission. Might not be type safe.
 
 `Gearbox` has only one prop - `render`, if not set - children is a ReactNode. If set - renderProp(function as a children)
+
+`gear(component, props)` - a small helper to create elements, without mocking `children` prop 
  
 ## Rules
  - `Gearboxes` are used to combine gears together, and put them into context.
@@ -51,12 +53,13 @@ to change this behavior to function-as-children. See second example.
  Gearbox could merge output from different component using the keys as names.
  But sometimes you need a bit another structure, for example - just rename fields.
 ```js
-import {gearbox} from 'react-gearbox';
+import {gearbox, gear} from 'react-gearbox';
 import {Toggle} from 'react-powerplug';
 
  const Gearbox = gearbox({   
    leftMenuController: <Toggle initial={} />,
    topMenuController: <Toggle initial={} />,
+   toggler: gear(Toggle, { initial: {} }), // ~ <Toggle initial={} children={mock} />
   }, {
    transmission: ({leftMenuController, topMenuController}) => ({
      isLeftMenuOpen: leftMenuController.value,
@@ -116,6 +119,9 @@ The same technique could be used to achieve the same results as recompose's `wit
    
    // or pass it as React.Element
    context: <reactContext.Consumer children={null}/>,
+
+   // you may access all the gearings from above
+   smartComponent: (props, {data, context} /* all the props from above*/) => <OtherRenderProp />
    
    // Unstated container? Anything "render-prop" capable will work.
    stated: <UnstatedContainer />,

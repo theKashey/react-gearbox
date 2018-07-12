@@ -1,3 +1,3 @@
-import {gearbox, transmission, setGearboxDebug} from "./component";
+import {gearbox, transmission, setGearboxDebug, gear} from "./component";
 
-export {gearbox, transmission, setGearboxDebug}
+export {gearbox, transmission, setGearboxDebug, gear}
