@@ -1,19 +1,19 @@
-⚙️ GearBox ⚙️
+⚙️📦 GearBox 
 =======
 [![Build Status](https://travis-ci.org/theKashey/react-gearbox.svg?branch=master)](https://travis-ci.org/theKashey/react-gearbox)
 [![coverage-badge](https://img.shields.io/codecov/c/github/thekashey/react-gearbox.svg?style=flat-square)](https://codecov.io/github/thekashey/react-gearbox)
 [![NPM version](https://img.shields.io/npm/v/react-gearbox.svg)](https://www.npmjs.com/package/react-gearbox)
 
 
-Compose renderless containers like a pro. 
+Composes renderless containers and manages them in afterlive. 
 Heavily inspired by [react-adopt](https://github.com/pedronauck/react-adopt)(context compose),
  [react-powerplug](https://github.com/renatorib/react-powerplug)(renderless containers)
  and [redux-restate](https://github.com/theKashey/restate)(fractal state).
 
 The purpose of this library is
- - (torque) combine "container"(plugs, context, states), to form more complex structure.
- - (transmission) provide a way to access them down the tree.
- - (gear train) provide a way to alter their work.
+ - (torque) combine "container"(plugs, context, states), to form more complex structure (gearbox).
+ - (transmission) provide a way to access them down the tree (train).
+ - (gear train) provide a way to alter their work (transmission).
 
 That's why - gearbox
 
@@ -30,9 +30,6 @@ That's why - gearbox
       - options.defaultProps - set default props for a future component (note: defaultProps are not reflected on types, PR welcomed)
 
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
-
-!By default Gearbox __expects ReactNode as a children__, and data to be accessed via `train`, you may specify `render` props, 
-to change this behavior to function-as-children. See second example. 
 
 * `transmission(gearboxIn, clutch): Gearbox` - created a devired Gearbox, with "clutch" function applied to all stored data. 
 
@@ -96,7 +93,12 @@ In the same way - you can create a new Components
 The same technique could be used to achieve the same results as recompose's `withHandlers`
 > While gearbox itself is `withState`.  
 
+# Debugging
 
+ Gearbox also provides a _fancy_ debugging. Just double check React Dev Tools.
+ 
+ In addition:
+  - setDebug(boolean | function) - enableds low-level debug.
 
  
 # Examples
@@ -129,6 +131,8 @@ The same technique could be used to achieve the same results as recompose's `wit
 ```
 
 2. Use Gearbox with or without renderprops 
+
+By default Gearbox __expects ReactNode as a children__, and data to be accessed via `train`, but you may specify `render` prop, to change this behavior to function-as-children. 
 
 > `render` stands for renderProps, `on` is required by `toggle`, so required by Gearbox
  ```js
