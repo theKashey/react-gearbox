@@ -27,11 +27,13 @@ export function gear<T>
   return (<Type {...props} children={nop}/>) as any;
 }
 
-let debugEnabled = false;
+export type DebugCallback = (name: string, ...args: any[]) => any;
+
+let debugEnabled: boolean | DebugCallback = false;
 
 declare const process: any;
 
-export const setGearboxDebug = (flag: boolean) => {
+export const setGearboxDebug = (flag: boolean | DebugCallback) => {
   debugEnabled = flag;
 };
 
@@ -132,7 +134,11 @@ const constructElement = (key: string, obj: any, props: any, prevProps: any, acc
 
 const debug = (name: string, ...args: any[]) => {
   if (debugEnabled) {
-    console.debug('Gearbox', name || 'undefined', ...args);
+    if (typeof debugEnabled === 'function') {
+      debugEnabled(name, ...args);
+    } else {
+      console.debug('Gearbox', name || 'undefined', ...args);
+    }
   }
 };
 
