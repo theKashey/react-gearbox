@@ -19,6 +19,35 @@ That's why - gearbox
 
 # API
 
+```js
+import {gearbox} from 'react-gearbox';
+
+// consume any "headless" component
+const State = gearbox({
+   name: <Value initial="Bruce Wayne" />,
+   nick: <Value initial="Batman" />,
+   team: <UnstatedContainer />,
+   enemies: Context.Consumer
+});
+
+// create state and access via renderprops
+<State render>
+  {({nick}) => <span>cos I am {nick.value}</span>}
+</State>
+
+// create state, and access it later using train
+<State>
+  <span>cos I am <State.train>{({nick}) => nick.value}</State.train></span>
+</State>
+
+// unwrap powerplug using transmission
+<State>
+  <State.transmission clutch={({nick}) => ({nick: nick.value})}>
+    <span>cos I am <State.train>{({nick}) => nick}</State.train></span>
+  </State.transmission>
+</State>
+``` 
+
 * `gearbox(gears, options?): Gearbox` - creates a Gearbox component. Where
  * `gears` is a shape of different _render-prop-ish_ components, for example:
       - ReactElements, or 
@@ -32,7 +61,9 @@ That's why - gearbox
 Produces a `Gearbox` - renderless container, which will provide _torque_ from all gears as a render prop.
 
 * `transmission(gearboxIn, clutch): Gearbox` - created a devired Gearbox, with "clutch" function applied to all stored data. 
-
+leftMenuController: <Toggle initial={} />,
+   topMenuController: <Toggle initial={} />,
+   toggler: gear(Toggle, { initial: {} }), // ~ <Toggle initial={} children={mock} />
 `Gearbox` is a compound component, and includes 2 sub components
 * Gearbox.train - _React Context_ based long-range torque provider, which will provide access to the parent Gearbox from the nested components.
 * Gearbox.transmission - establish a local (declarative) transmission. Might not be type safe.
@@ -54,9 +85,7 @@ import {gearbox, gear} from 'react-gearbox';
 import {Toggle} from 'react-powerplug';
 
  const Gearbox = gearbox({   
-   leftMenuController: <Toggle initial={} />,
-   topMenuController: <Toggle initial={} />,
-   toggler: gear(Toggle, { initial: {} }), // ~ <Toggle initial={} children={mock} />
+   
   }, {
    transmission: ({leftMenuController, topMenuController}) => ({
      isLeftMenuOpen: leftMenuController.value,
