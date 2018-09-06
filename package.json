@@ -54,7 +54,7 @@
   "keywords": [],
   "dependencies": {
     "invariant": "^2.2.4",
-    "react-rename": "^0.0.5",
+    "react-rename": "^1.0.0",
     "shallowequal": "^1.0.2"
   }
 }

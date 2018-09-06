@@ -117,7 +117,7 @@ const getName = (type: any) => type.displayName || type.name || 'Component';
 const gearName = (type: any, key: string) =>
   process.env.NODE_ENV === 'production'
     ? type
-    : reactRename(type, `${key}/⚙️/︎${getName(type)}/📦`);
+    : reactRename(type, `${key} ⚙️(︎${getName(type)})📦`);
 
 const constructElement = (key: string, obj: any, props: any, prevProps: any, acc: any) => {
   let next = null;
