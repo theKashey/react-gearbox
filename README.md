@@ -109,7 +109,8 @@ In the same way - you can create a new Components
    }),
    defaultProps: {
      render: true, // render props as default
-     local: false  // no context support
+     local: false,  // no context support,
+     pure: true, // behaves as a pure component (or readux-connect)
    }
   });
 
@@ -121,6 +122,16 @@ In the same way - you can create a new Components
 
 The same technique could be used to achieve the same results as recompose's `withHandlers`
 > While gearbox itself is `withState`.  
+
+# Observed bits
+Gearbox utilizes React.Context `observerBits` feature, not calling `Trains` if data they consume not changed.
+With `pure` option enabled this gives you fine control over update propagation flow.
+
+You may opt-out by using `Gearbox.directTrain`.
+```js
+<Gear.train>{({value1}) => <b>will only update, when "value1" got updated</span>}</Gear.train>
+<Gear.directTrain>{({value1}) => <b>will update on any GearBox update</span>}</Gear.directTrain>
+```
 
 # Debugging
 

@@ -8,16 +8,56 @@ const St = gearbox({
   v1: <Value initial={10} children={np}/>,
   v2: ({v}: { v: number }) => <Value initial={v} children={np}/>,
   v3: <Value initial={20} children={np}/>
-});
+}, { pure: true });
+
+class Blocker extends React.Component {
+  shouldComponentUpdate() {
+    return false;
+  }
+
+  componentWillUnmount() {
+    console.log('UNMOUNT');
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
 
 const Sub = () => (
-  <St.train>
-    {({v1, v2, v3}) => (
-      <div> train :
-        ST:{v1.value}-{v2.value}-{v3.value}
-      </div>
-    )}
-  </St.train>
+    <div style={{border: '1px solid #000'}}>
+      <St.train>
+        {({v1, v2, v3}) => (
+          <div> train :
+            ST:{v1.value}-{v2.value}-{v3.value}
+          </div>
+        )}
+      </St.train>
+      <St.train>
+        {({v1}) => (
+          <div> train :
+            1:{v1.value}
+            <Blocker>
+              **{v1.value}
+            </Blocker>
+          </div>
+        )}
+      </St.train>
+      <St.train>
+        {({v2,}) => (
+          <div> train :
+            2:{v2.value}
+          </div>
+        )}
+      </St.train>
+      <St.train>
+        {({v3}) => (
+          <div> train :
+            3:{v3.value}
+          </div>
+        )}
+      </St.train>
+    </div>
 );
 
 const Transformer: React.SFC = ({children}) => (
@@ -56,7 +96,7 @@ const AddGearS = gearbox({
   transmission: ({v1, v2}: { v1: any, v2: any }, {add}: { add: number }) => ({sum: v1.value + v2.value + add})
 });
 
-const  Switch = gearbox({
+const Switch = gearbox({
   toggle: ({initial}: { initial: boolean }) => <Toggle initial={initial} children={np}/>,
 }, {
   defaultProps: {
@@ -143,11 +183,13 @@ const App = () => (
                   )}
                 </PropAffected>
 
-                <Sub/>
-
-                <Transformer>
+                <Blocker>
                   <Sub/>
-                </Transformer>
+
+                  <Transformer>
+                    <Sub/>
+                  </Transformer>
+                </Blocker>
                 <SubSt>
                   <div>
                     Sum:
