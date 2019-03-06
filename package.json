@@ -1,9 +1,11 @@
 {
   "name": "react-gearbox",
   "version": "2.2.0",
-  "description": "Renderless data provider.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "Renderless data provider",
+  "main": "dist/es5/index.js",
+  "jsnext:main": "dist/es2015/index.js",
+  "module": "dist/es2015/index.js",
+  "types": "dist/es5/index.d.ts",
   "files": [
     "dist"
   ],
@@ -42,7 +44,7 @@
     "react-powerplug": "^1.0.0-rc.1",
     "react-test-renderer": "^16.4.0",
     "size-limit": "^0.18.0",
-    "ts-react-toolbox": "^0.1.10",
+    "ts-react-toolbox": "^0.2.2",
     "utility-types": "^2.0.0"
   },
   "engines": {
@@ -51,13 +53,19 @@
   "peerDependencies": {
     "react": "^16.3.0"
   },
-  "keywords": [],
+  "keywords": [
+    "renderless",
+    "state",
+    "context",
+    "drilling"
+  ],
   "dependencies": {
     "@types/memoize-one": "^3.1.1",
     "invariant": "^2.2.4",
     "memoize-one": "^4.0.0",
     "react-rename": "^1.0.0",
     "shallowequal": "^1.0.2",
+    "tslib": "^1.0.0",
     "with-known-usage": "^1.0.0"
   }
 }
